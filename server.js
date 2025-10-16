@@ -30,6 +30,36 @@ app.get('/api/audit/:id', async (req, res) => {
   }
 });
 
+app.get('/api/asset/:code', async (req, res) => {
+  const assetCode = req.params.code; // Get the asset code from route parameter
+
+  try {
+    // Call SafetyCulture API
+    const response = await fetch(
+      `https://api.safetyculture.io/assets/v1/assets:GetAssetByCode?code=${encodeURIComponent(assetCode)}`,
+      {
+        method: 'GET',
+        headers: {
+          accept: 'application/json', // Request JSON response
+          authorization: `Bearer ${SAFETYCULTURE_TOKEN}`, // Add your API token
+        },
+      }
+    );
+
+    // If API response is not OK, return error
+    if (!response.ok) {
+      return res.status(response.status).json({ error: 'Failed to fetch asset data' });
+    }
+
+    const data = await response.json(); // Parse JSON response
+    res.json(data); // Send the asset data back to frontend
+  } catch (err) {
+    console.error('Error fetching asset:', err); // Log errors
+    res.status(500).json({ error: 'Server error' }); // Return server error
+  }
+});
+
+
 // POST audit
 app.post('/api/audit', async (req, res) => {
   const auditItems = req.body.items; 
